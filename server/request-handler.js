@@ -49,12 +49,10 @@ var requestHandler = function(request, response) {
   let body = [];
   request.on('data', (chunk) => {
     body.push(chunk);
-  }).on('end', () => {
-    
-    body = Buffer.concat(body).toString();
+  });
 
-    console.log('body: ', body);
-    
+  request.on('end', () => {
+    body = body.toString();
 
     const {method, url} = request;
     // The outgoing status.
@@ -68,10 +66,7 @@ var requestHandler = function(request, response) {
     
     if (url !== '/classes/messages') {
       statusCode = 404;
-    }
-    
-    console.log('results: ', results);
-    
+    }    
 
     // See the note below about CORS headers.
     var headers = defaultCorsHeaders;
@@ -89,7 +84,7 @@ var requestHandler = function(request, response) {
     responseBody.results = results;
 
     response.writeHead(statusCode, headers);
-    response.write(JSON.stringify(responseBody));
+    //response.write();
 
     // Make sure to always call response.end() - Node may not send
     // anything back to the client until you do. The string you pass to
@@ -98,10 +93,10 @@ var requestHandler = function(request, response) {
     //
     // Calling .end "flushes" the response's internal buffer, forcing
     // node to actually send all the data over to the client.
-    response.end();
+    response.end(JSON.stringify(responseBody));
   });
 };
 
 
 
-module.exports = requestHandler;
+exports.requestHandler = requestHandler;
