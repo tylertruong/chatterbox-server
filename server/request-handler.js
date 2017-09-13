@@ -28,6 +28,8 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+var results = [];
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -52,6 +54,7 @@ var requestHandler = function(request, response) {
     body = Buffer.concat(body).toString();
 
     console.log('body: ', body);
+    
 
     const {method, url} = request;
     // The outgoing status.
@@ -60,12 +63,14 @@ var requestHandler = function(request, response) {
       statusCode = 200;
     } else if (method === 'POST') {
       statusCode = 201;
+      results.push(JSON.parse(body));
     }
     
     if (url !== '/classes/messages') {
       statusCode = 404;
     }
     
+    console.log('results: ', results);
     
 
     // See the note below about CORS headers.
@@ -81,7 +86,7 @@ var requestHandler = function(request, response) {
     // which includes the status and all headers.
 
     const responseBody = {};
-    responseBody.results = [];
+    responseBody.results = results;
 
     response.writeHead(statusCode, headers);
     response.write(JSON.stringify(responseBody));
