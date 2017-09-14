@@ -45,7 +45,7 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  // console.log('Serving request type ' + request.method + ' for url ' + request.url);
+  console.log('Serving request type ' + request.method + ' for url ' + request.url);
   const {method, url} = request;
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = 'application/json';
@@ -53,21 +53,30 @@ var requestHandler = function(request, response) {
   if (!url.startsWith('/classes/messages')) {
     response.writeHead(404, headers);
     response.end();
-  } else if (method === 'GET') {
+  } else if (method === 'GET' || method === 'OPTIONS') {
+    console.log('inside GET OR OPTIONS!');
     const responseBody = {};
     responseBody.results = results;
     response.writeHead(200, headers);
     response.end(JSON.stringify(responseBody));
   } else if (method === 'POST') {
+    console.log('inside POST!');
     let body = [];
+    request.on('error', () => {
+
+      console.error('ERROR!');
+    });
     request.on('data', (chunk) => {
       body.push(chunk);
     });
     request.on('end', () => {
       body = body.toString();
+      console.log('body ', body);
       results.push(JSON.parse(body));
       response.writeHead(201, headers);
-      response.end();
+      const responseBody = {};
+      responseBody.objectId = results.length;
+      response.end(JSON.stringify(responseBody));
     });
   }
   
