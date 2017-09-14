@@ -46,6 +46,7 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
+
   const {method, url} = request;
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = 'application/json';
@@ -54,7 +55,6 @@ var requestHandler = function(request, response) {
     response.writeHead(404, headers);
     response.end();
   } else if (method === 'GET' || method === 'OPTIONS') {
-    console.log('inside GET OR OPTIONS!');
     
     const responseBody = {};
     var queries = url.match(/\?(.+)=(.+)/);
@@ -64,15 +64,11 @@ var requestHandler = function(request, response) {
     } else {
       responseBody.results = results;
     }
-
-    console.log('results', responseBody.results);
     response.writeHead(200, headers);
     response.end(JSON.stringify(responseBody));
   } else if (method === 'POST') {
-    console.log('inside POST!');
     let body = [];
     request.on('error', () => {
-
       console.error('ERROR!');
     });
     request.on('data', (chunk) => {
@@ -84,17 +80,11 @@ var requestHandler = function(request, response) {
       message.createdAt = new Date().toISOString();
       message.objectId = results.length + 1;
       results.push(message);
-      console.log(message);
 
       response.writeHead(201, headers);
       response.end(JSON.stringify(message));
     });
-  }
-  
-//
-
-
-  
+  }  
 };
 
 
