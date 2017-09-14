@@ -73,5 +73,71 @@ describe('server', function() {
     });
   });
 
+  it('Should respond with messages that were newly posted when ordered with -createdAt', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jene',
+        text: 'De my bidding!'}
+    };
+
+    var requestParams2 = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jana',
+        text: 'Second Message!'}
+    };
+
+    request(requestParams, function(error, response, body) {
+      request('http://127.0.0.1:3000/classes/messages?order=-createdAt', function(error, response, body) {
+      });
+    });
+
+    request(requestParams2, function(error, response, body) {
+      // Now if we request the log, that message we posted should be there:
+      request('http://127.0.0.1:3000/classes/messages?order=-createdAt', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        expect(messages[0].username).to.equal('Jana');
+        expect(messages[0].text).to.equal('Second Message!');
+        expect(messages[1].username).to.equal('Jene');
+        expect(messages[1].text).to.equal('De my bidding!');
+        done();
+      });
+    });
+
+  });
+
+  it('should return a message on POST request', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jono',
+        text: 'Do my bidding!'}
+    };
+
+    request(requestParams, function(error, response, body) {
+      expect(response.body).to.have.property('username');
+      expect(response.body).to.have.property('text');
+      expect(response.body).to.have.property('createdAt');
+      expect(response.body).to.have.property('objectId');
+      done();
+    });
+  });
+
+  it('should respond to badrequest with a 400 status code', function(done) {
+    var requestParams = {method: 'DELETE',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jono',
+        text: 'Do my bidding!'}
+    };
+
+    request(requestParams, function(error, response, body) {
+      expect(response.statusCode).to.equal(400);
+      done();
+    });
+  });
+
+
 
 });

@@ -116,4 +116,65 @@ describe('Node Server Request Listener Function', function() {
       });
   });
 
+
+  it('Should respond with messages that were newly posted when ordered with -createdAt', function() {
+    var stubMsg = {
+      username: 'Jene',
+      text: 'message 1!'
+    };
+    var stubMsg2 = {
+      username: 'Jana',
+      text: 'message 2!'
+    };
+    var req = new stubs.request('/classes/messages', 'POST', stubMsg);
+    var res = new stubs.response();
+
+    handler.requestHandler(req, res);
+
+    expect(res._responseCode).to.equal(201);
+
+    var req = new stubs.request('/classes/messages', 'POST', stubMsg2);
+    var res = new stubs.response();
+
+    handler.requestHandler(req, res);
+
+    expect(res._responseCode).to.equal(201);
+
+      // Now if we request the log for that room the message we posted should be there:
+    req = new stubs.request('/classes/messages?order=-createdAt', 'GET');
+    res = new stubs.response();
+ 
+    handler.requestHandler(req, res);
+    expect(res._responseCode).to.equal(200);
+    var messages = JSON.parse(res._data).results;
+    expect(messages.length).to.be.above(0);
+    expect(messages[0].username).to.equal('Jana');
+    expect(messages[0].text).to.equal('message 2!');
+    expect(messages[1].username).to.equal('Jene');
+    expect(messages[1].text).to.equal('message 1!');
+    expect(res._ended).to.equal(true);
+  });
+
+
+  it('Should send a message back containing message properties when using POST', function() {
+    var stubMsg = {
+      username: 'Jono',
+      text: 'Do my bidding!'
+    };
+    var req = new stubs.request('/classes/messages', 'POST', stubMsg);
+    var res = new stubs.response();
+
+    handler.requestHandler(req, res);
+
+    var parsedBody = JSON.parse(res._data);
+    expect(parsedBody).to.have.property('username');
+    expect(parsedBody).to.have.property('text');
+    expect(parsedBody).to.have.property('createdAt');
+    expect(parsedBody).to.have.property('objectId');
+    expect(parsedBody).to.be.an('object');
+    expect(res._ended).to.equal(true);
+  });
+
+
+
 });
