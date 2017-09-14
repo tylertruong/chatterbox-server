@@ -55,8 +55,17 @@ var requestHandler = function(request, response) {
     response.end();
   } else if (method === 'GET' || method === 'OPTIONS') {
     console.log('inside GET OR OPTIONS!');
+    
     const responseBody = {};
-    responseBody.results = results;
+    var queries = url.match(/\?(.+)=(.+)/);
+
+    if (queries[1] === 'order' && queries[2] === '-createdAt') {
+      responseBody.results = results.slice().reverse();
+    } else {
+      responseBody.results = results;
+    }
+
+    console.log('results', responseBody.results);
     response.writeHead(200, headers);
     response.end(JSON.stringify(responseBody));
   } else if (method === 'POST') {
@@ -71,15 +80,19 @@ var requestHandler = function(request, response) {
     });
     request.on('end', () => {
       body = body.toString();
-      console.log('body ', body);
-      results.push(JSON.parse(body));
+      var message = JSON.parse(body);
+      message.createdAt = new Date().toISOString();
+      message.objectId = results.length + 1;
+      results.push(message);
+      console.log(message);
+
       response.writeHead(201, headers);
-      const responseBody = {};
-      responseBody.objectId = results.length;
-      response.end(JSON.stringify(responseBody));
+      response.end(JSON.stringify(message));
     });
   }
   
+//
+
 
   
 };
