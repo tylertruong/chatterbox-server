@@ -59,7 +59,7 @@ var requestHandler = function(request, response) {
     const responseBody = {};
     var queries = url.match(/\?(.+)=(.+)/);
 
-    if (queries[1] === 'order' && queries[2] === '-createdAt') {
+    if (queries && queries[1] === 'order' && queries[2] === '-createdAt') {
       responseBody.results = results.slice().reverse();
     } else {
       responseBody.results = results;
