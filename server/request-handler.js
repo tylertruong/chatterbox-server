@@ -29,6 +29,7 @@ var defaultCorsHeaders = {
 };
 
 var results = require('./messages');
+var fs = require('fs');
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -45,13 +46,25 @@ var requestHandler = function(request, response) {
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
-  //console.log('Serving request type ' + request.method + ' for url ' + request.url);
+  console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   const {method, url} = request;
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = 'application/json';
+  
 
-  if (!url.startsWith('/classes/messages')) {
+  if (url === '/') {
+   // headers['Content-Type'] = 'text/html';
+    fs.readFile('./server/index.html', function(err, data) {
+      console.log('data', data);
+      if (err) {
+        console.log(err);
+      }
+      // response.writeHead(200, headers);
+      // response.write(data);
+      response.end(data.toString());
+    });
+  } else if (!url.startsWith('/classes/messages')) {
     response.writeHead(404, headers);
     response.end();
   } else if (method === 'GET' || method === 'OPTIONS') {
@@ -76,14 +89,15 @@ var requestHandler = function(request, response) {
     });
     request.on('end', () => {
       body = body.toString();
-      var message = JSON.parse(body);
+      let message = JSON.parse(body);
       message.createdAt = new Date().toISOString();
       message.objectId = results.length + 1;
-      results.push(message);
 
+      results.push(message);
       response.writeHead(201, headers);
       response.end(JSON.stringify(message));
     });
+
   } else {
     response.writeHead(400, headers);
     response.end('');
